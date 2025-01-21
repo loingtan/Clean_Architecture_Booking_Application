@@ -1,0 +1,21 @@
+# This is a generated file. Not intended for manual editing.
+version: "3.4"
+services:
+  bookify.api:
+    build:
+      context: "C:\\Users\\09398\\RiderProjects\\Bookify"
+      dockerfile: "src/Bookify.API/Dockerfile"
+      target: "base"
+    command: []
+    entrypoint:
+    - "dotnet"
+    - "/app/bin/Debug/net8.0/Bookify.API.dll"
+    environment:
+      DOTNET_USE_POLLING_FILE_WATCHER: "true"
+    image: "bookifyapi:dev"
+    ports: []
+    volumes:
+    - "C:\\Users\\09398\\RiderProjects\\Bookify\\src\\Bookify.API:/app:rw"
+    - "C:\\Users\\09398\\RiderProjects\\Bookify:/src:rw"
+    - "C:\\Users\\09398\\.nuget\\packages:/root/.nuget/packages"
+    working_dir: "/app"

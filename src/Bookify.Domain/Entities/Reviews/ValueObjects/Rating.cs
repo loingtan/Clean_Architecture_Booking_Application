@@ -2,7 +2,7 @@
 
 namespace Bookify.Domain.Entities.Reviews.ValueObjects;
 
-public sealed record Rating
+public class  Rating: ValueObject
 {
     public static readonly Error Invalid = new("Rating.Invalid", "The rating is invalid");
 
@@ -16,5 +16,11 @@ public sealed record Rating
             return Result.Failure<Rating>(Invalid);
 
         return new Rating(value);
+    }
+
+    protected override IEnumerable<object> GetEqualityComponents()
+    {
+       
+        yield return Value;
     }
 }

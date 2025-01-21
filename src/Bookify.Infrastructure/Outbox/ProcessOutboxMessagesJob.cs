@@ -51,7 +51,6 @@ internal sealed class ProcessOutboxMessagesJob : IJob
         foreach (var outboxMessage in outboxMessages)
         {
             Exception exception = null;
-
             try
             {
                 var domainEvent = JsonConvert.DeserializeObject<IDomainEvent>(outboxMessage.Content, JsonSerializerSettings)!;

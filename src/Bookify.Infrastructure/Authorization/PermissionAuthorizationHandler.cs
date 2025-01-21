@@ -11,7 +11,7 @@ internal sealed class PermissionAuthorizationHandler : AuthorizationHandler<Perm
 
     protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, PermissionRequirement requirement)
     {
-        if (!context.User.Identity.IsAuthenticated)
+        if (context.User.Identity is { IsAuthenticated: false })
             return;
 
         using var scope = _serviceProvider.CreateScope();

@@ -4,7 +4,7 @@ using Bookify.Domain.Entities.Users.ValueObjects;
 
 namespace Bookify.Domain.Entities.Users;
 
-public sealed class User : Entity<UserId>
+public sealed class User :  AuditableEntity<UserId>
 {
     private readonly List<Role> _roles = new();
 

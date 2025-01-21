@@ -29,6 +29,9 @@ using Microsoft.AspNetCore.Authorization;
 using Bookify.Application.Abstractions.Caching;
 using Bookify.Infrastructure.Caching;
 using Asp.Versioning;
+using Bookify.Infrastructure.Idempotence;
+using Bookify.Infrastructure.Interceptors;
+using MediatR;
 
 namespace Bookify.Infrastructure;
 public static class DependencyInjection
@@ -39,7 +42,7 @@ public static class DependencyInjection
     {
         services.AddTransient<IDateTimeProvider, DateTimeProvider>();
         services.AddTransient<IEmailService, EmailService>();
-
+        AddIdempotence(services);
         AddPersistence(services, configuration);
 
         AddAuthentication(services, configuration);
@@ -55,6 +58,12 @@ public static class DependencyInjection
         AddApiVersioning(services);
 
         return services;
+    }
+
+    private static void AddIdempotence(IServiceCollection services)
+    {
+        
+        services.Decorate(typeof(INotificationHandler<>), typeof(IdempotentDomainEventHandler<>));
     }
 
     private static void AddBackgroundJobs(IServiceCollection services, IConfiguration configuration)
@@ -110,7 +119,7 @@ public static class DependencyInjection
     {
         var connectionString = configuration.GetConnectionString("Database") ??
             throw new ArgumentNullException(nameof(configuration));
-
+        services.AddSingleton<AuditableEntityInterceptor>();
         services.AddDbContext<ApplicationDbContext>(options =>
         {
             options.UseNpgsql(connectionString).UseSnakeCaseNamingConvention();
@@ -120,11 +129,8 @@ public static class DependencyInjection
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IApartmentRepository, ApartmentRepository>();
         services.AddScoped<IBookingRepository, BookingRepository>();
-
         #endregion
-
         services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<ApplicationDbContext>());
-
         services.AddSingleton<ISqlConnectionFactory>(_ => new SqlConnectionFactory(connectionString));
 
         SqlMapper.AddTypeHandler(new DateOnlyTypeHandler());
@@ -158,7 +164,7 @@ public static class DependencyInjection
             .AddRedis(configuration.GetConnectionString("Cache"))
             .AddUrlGroup(new Uri(configuration["KeyCloak:BaseUrl"]), HttpMethod.Get, "keycloak");
     }
-
+    
 
     ///<summary>
     /// Add API Versioning when using Controllers

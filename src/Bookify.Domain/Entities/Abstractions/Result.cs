@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿#nullable enable
+using System.Diagnostics.CodeAnalysis;
 
 namespace Bookify.Domain.Entities.Abstractions;
 
@@ -24,19 +25,11 @@ public class Result
     public static Result<TValue> Create<TValue>(TValue? value) => value is null ? Failure<TValue>(Error.NullValue) : Success(value);
 }
 
-public class Result<TValue> : Result
+public class Result<TValue>(TValue? value, bool isSuccess, Error error) : Result(isSuccess, error)
 {
-    private readonly TValue? _value;
-
-    public Result(TValue? value, bool isSuccess, Error error)
-        :base(isSuccess, error)
-    {
-        _value = value;
-    }
-
     [NotNull]
     public TValue Value => IsSuccess
-        ? _value!
+        ? value!
         : throw new InvalidOperationException("The value of a failure result can not be accessed.");
 
     public static implicit operator Result<TValue>(TValue? value) => Create(value);

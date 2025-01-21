@@ -45,7 +45,7 @@ public sealed class ReserveBookingCommandHandler : ICommandHandler<ReserveBookin
         if (apartment is null)
             return Result.Failure<Guid>(ApartmentErrors.NotFound);
 
-        var duration = DateRange.Create(request.StartDate, request.EndDate);
+        var duration = DateRange.From(request.StartDate, request.EndDate);
 
         if (await _bookingRepository.IsOverlappingAsync(apartment, duration, cancellationToken))
             return Result.Failure<Guid>(BookingErrors.Overlap);

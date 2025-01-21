@@ -2,4 +2,7 @@
 
 namespace Bookify.Domain.Entities.Users.Events;
 
-public sealed record UserCreatedDomainEvent(UserId UserId) : IDomainEvent;
+public sealed record UserCreatedDomainEvent(UserId UserId) : IDomainEvent
+{
+    public Guid Id => UserId.Value;
+};

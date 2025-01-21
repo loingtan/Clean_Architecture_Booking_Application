@@ -8,7 +8,7 @@ using Bookify.Domain.Entities.Users;
 
 namespace Bookify.Domain.Entities.Reviews;
 
-public class Review : Entity<ReviewId>
+public class Review :  AuditableEntity<ReviewId>
 {
     private Review(
         ReviewId id,

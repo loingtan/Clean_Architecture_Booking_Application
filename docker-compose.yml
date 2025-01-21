@@ -11,7 +11,7 @@ services:
       - bookify-db
   
   bookify-db:
-    image: postgres:latest
+    image: postgres:16
     container_name: Bookify.Db
     environment:
       - POSTGRES_DB=bookify
@@ -23,15 +23,16 @@ services:
       - 5432:5432
 
   bookify-idp:
-    image: jboss/keycloak:latest
+    image: quay.io/keycloak/keycloak:latest
     container_name: Bookify.Identity
     environment:
-      - KEYCLOAK_USER=admin
-      - KEYCLOAK_PASSWORD=admin
-      - KEYCLOAK_IMPORT=/tmp/bookify-realm-export.json
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+    command: >
+      start-dev --import-realm --hostname-strict=false
     volumes:
-      - ./.containers/identity:/opt/jboss/keycloak/standalone/data
-      - ./.files/bookify-realm-export.json:/tmp/bookify-realm-export.json
+      - ./.containers/identity:/opt/keycloak/data
+      - ./.files/bookify-realm-export.json:/opt/keycloak/data/import/bookify-realm-export.json
     ports:
       - 18080:8080
 
@@ -39,14 +40,14 @@ services:
     image: datalust/seq:latest
     container_name: Bookify.Seq
     environment:
-     - ACCEPT_EULA=Y
+      - ACCEPT_EULA=Y
     ports:
-     - 5341:5341
-     - 8081:80
+      - 5341:5341
+      - 8081:80
 
   bookify-redis:
     image: redis:latest
     container_name: Bookify.Redis
     restart: always
     ports:
-     - 6379:6379
+      - 6379:6379

@@ -1,4 +1,5 @@
 ﻿using Bookify.Application.Abstractions.Email;
+using Bookify.Application.Abstractions.Messaging;
 using Bookify.Domain.Entities.Bookings;
 using Bookify.Domain.Entities.Bookings.Events;
 using Bookify.Domain.Entities.Users;
@@ -6,7 +7,7 @@ using MediatR;
 
 namespace Bookify.Application.Bookings.ReserveBooking;
 
-internal sealed class BookingReservedDomainEventHandler : INotificationHandler<BookingReservedDomainEvent>
+internal sealed class BookingReservedDomainEventHandler : IDomainEventHandler<BookingReservedDomainEvent>
 {
     private readonly IBookingRepository _bookingRepository;
     private readonly IUserRepository _userRepository;

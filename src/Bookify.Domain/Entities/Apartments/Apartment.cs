@@ -4,7 +4,7 @@ using Bookify.Domain.Entities.Apartments.ValueObjects;
 using Bookify.Domain.Shared;
 
 namespace Bookify.Domain.Entities.Apartments;
-public sealed class Apartment : Entity<ApartmentId>
+public sealed class Apartment : AuditableEntity<ApartmentId>
 {
     public Apartment(
         ApartmentId id,

@@ -1,30 +1,27 @@
 ﻿using Bookify.Application.Abstractions.Clock;
 using Bookify.Application.Exceptions;
 using Bookify.Domain.Entities.Abstractions;
+using Bookify.Domain.Entities.Apartments;
+using Bookify.Domain.Entities.Bookings;
 using Bookify.Infrastructure.Outbox;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 
 namespace Bookify.Infrastructure;
-public sealed class ApplicationDbContext : DbContext, IUnitOfWork
+public sealed class ApplicationDbContext(
+    DbContextOptions options,
+    IPublisher publisher,
+    IDateTimeProvider dateTimeProvider)
+    : DbContext(options), IUnitOfWork
 {
     private static readonly JsonSerializerSettings JsonSerializerSettings = new()
     {
         TypeNameHandling = TypeNameHandling.All
     };
-
-    //private readonly IPublisher _publisher;
-    private readonly IDateTimeProvider _dateTimeProvider;
-
-    public ApplicationDbContext(DbContextOptions options, 
-        //IPublisher publisher,
-        IDateTimeProvider dateTimeProvider) : base(options)
-    {
-        //_publisher = publisher;
-        _dateTimeProvider = dateTimeProvider;
-    }
-
+    public DbSet<Apartment> Apartments => Set<Apartment>();
+    public DbSet<Booking> Bookings => Set<Booking>();
+    public DbSet<OutboxMessageConsumer> OutboxMessageConsumers => Set<OutboxMessageConsumer>();
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
@@ -41,7 +38,7 @@ public sealed class ApplicationDbContext : DbContext, IUnitOfWork
             AddDomainEventsAsOutboxMessages();
 
             var result = await base.SaveChangesAsync(cancellationToken);
-            
+            await PublishDomainEventsAsync();
             return result;
         }
         catch (DbUpdateConcurrencyException ex)
@@ -51,27 +48,23 @@ public sealed class ApplicationDbContext : DbContext, IUnitOfWork
         
     }
 
-    //Publishing an event can fail and is not in a transaction. Changing to Outbox pattern
-    //private async Task PublishDomainEventsAsync()
-    //{
-    //    /*
-    //     Using the ChangeTracker, we grab the entries which implement the Entity class. 
-    //     Then we grab all the domain events and publish one by one.         
-    //     */
-    //    var domainEvents = ChangeTracker
-    //        .Entries<IEntity>()
-    //        .Select(entry => entry.Entity)
-    //        .SelectMany(entity =>
-    //        {
-    //            var domainEvents = entity.GetDomainEvents();
+  
+    private async Task PublishDomainEventsAsync()
+    {
+        var domainEvents = ChangeTracker
+            .Entries<IEntity>()
+            .Select(entry => entry.Entity)
+            .SelectMany(entity =>
+            {
+                var domainEvents = entity.GetDomainEvents();
 
-    //            entity.ClearDomainEvents();
+                entity.ClearDomainEvents();
 
-    //            return domainEvents;
-    //        }).ToList();
+                return domainEvents;
+            }).ToList();
 
-    //    foreach (var domainEvent in domainEvents) await _publisher.Publish(domainEvent);
-    //}
+        foreach (var domainEvent in domainEvents) await publisher.Publish(domainEvent);
+    }
 
     private void AddDomainEventsAsOutboxMessages()
     {
@@ -88,7 +81,7 @@ public sealed class ApplicationDbContext : DbContext, IUnitOfWork
             })
             .Select(domainEvent => new OutboxMessage(
                 Guid.NewGuid(),
-                _dateTimeProvider.UtcNow,
+                dateTimeProvider.UtcNow,
                 domainEvent.GetType().Name,
                 JsonConvert.SerializeObject(domainEvent, JsonSerializerSettings)))
             .ToList();
