@@ -5,7 +5,7 @@ namespace Bookify.Api.Middleware;
 
 public class ExceptionHandlingMiddleware(
     RequestDelegate next,
-    ILogger<ExceptionHandlingMiddleware> logger)
+    ILogger<ExceptionHandlingMiddleware> logger) 
 {
     public async Task InvokeAsync(HttpContext context)
     {

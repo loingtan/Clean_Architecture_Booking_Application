@@ -3,6 +3,7 @@ using Bookify.Application.Exceptions;
 using Bookify.Domain.Entities.Abstractions;
 using Bookify.Domain.Entities.Apartments;
 using Bookify.Domain.Entities.Bookings;
+using Bookify.Domain.Entities.Reviews;
 using Bookify.Infrastructure.Outbox;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -21,6 +22,9 @@ public sealed class ApplicationDbContext(
     };
     public DbSet<Apartment> Apartments => Set<Apartment>();
     public DbSet<Booking> Bookings => Set<Booking>();
+    public DbSet<Review> Reviews => Set<Review>();
+    public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
+    
     public DbSet<OutboxMessageConsumer> OutboxMessageConsumers => Set<OutboxMessageConsumer>();
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -85,7 +89,6 @@ public sealed class ApplicationDbContext(
                 domainEvent.GetType().Name,
                 JsonConvert.SerializeObject(domainEvent, JsonSerializerSettings)))
             .ToList();
-
         AddRange(outboxMessages);
     }
 }

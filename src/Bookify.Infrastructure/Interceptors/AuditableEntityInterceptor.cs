@@ -1,4 +1,5 @@
-﻿using Bookify.Domain.Entities.Abstractions;
+﻿using Bookify.Application.Abstractions.Authentication;
+using Bookify.Domain.Entities.Abstractions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -6,7 +7,7 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 namespace Bookify.Infrastructure.Interceptors;
 
 public class AuditableEntityInterceptor(
-    IUser user,
+    IUserContext user,
     TimeProvider dateTime) : SaveChangesInterceptor
 {
     public override InterceptionResult<int> SavingChanges(DbContextEventData eventData, InterceptionResult<int> result)
@@ -37,11 +38,11 @@ public class AuditableEntityInterceptor(
 
             if (entry.State == EntityState.Added)
             {
-                entity.CreatedBy = user.Id;
+                entity.CreatedBy = user.UserId;
                 entity.Created = utcNow;
             }
 
-            entity.LastModifiedBy = user.Id;
+            entity.LastModifiedBy = user.UserId;
             entity.LastModified = utcNow;
         }
     }

@@ -6,12 +6,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Bookify.API.Controllers.Bookings;
-
 [Authorize]
-[ApiController]
+
 [ApiVersion(ApiVersions.V1)]
 [Route("api/v{version:apiVersion}/bookings")]
-public class BookingsController : ControllerBase
+public class BookingsController : ApiController
 {
     private readonly ISender _sender;
 
@@ -27,7 +26,7 @@ public class BookingsController : ControllerBase
 
         var result = await _sender.Send(query, cancellationToken);
 
-        return result.IsSuccess ? Ok(result.Value) : NotFound();
+        return result.IsSuccess ? Ok(result.Value) : ProblemDetails(result.Error);  
     }
 
     [HttpPost]
@@ -43,7 +42,7 @@ public class BookingsController : ControllerBase
 
         var result = await _sender.Send(command, cancellationToken);
 
-        if (result.IsFailure) return BadRequest(result.Error);
+        if (result.IsFailure) return ProblemDetails(result.Error);
 
         return CreatedAtAction(nameof(GetBooking), new { id = result.Value }, result.Value);
     }

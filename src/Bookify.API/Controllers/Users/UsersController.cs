@@ -9,11 +9,11 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Bookify.API.Controllers.Users;
 
-[ApiController]
+
 [ApiVersion(ApiVersions.V1)]
 [ApiVersion(ApiVersions.V2)]
 [Route("api/v{version:apiVersion}/users")]
-public class UsersController(ISender sender) : ControllerBase
+public class UsersController(ISender sender) : ApiController
 {
     [HttpGet("me")]
     [MapToApiVersion(ApiVersions.V1)]
@@ -51,9 +51,7 @@ public class UsersController(ISender sender) : ControllerBase
 
         var result = await sender.Send(command, cancellationToken);
 
-        if (result.IsFailure) return BadRequest(result.Error);
-
-        return Ok(result.Value);
+        return result.IsFailure ? ProblemDetails(result.Error) : Ok(result.Value);
     }
 
     [AllowAnonymous]
@@ -66,8 +64,6 @@ public class UsersController(ISender sender) : ControllerBase
 
         var result = await sender.Send(command, cancellationToken);
 
-        if (result.IsFailure) return BadRequest(result.Error);
-
-        return Ok(result.Value);
+        return result.IsFailure ? ProblemDetails(result.Error) : Ok(result.Value);
     }
 }

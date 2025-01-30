@@ -1,13 +1,21 @@
 using Bookify.API.Extensions;
+using Bookify.API.Middleware;
 using Bookify.API.OpenApi;
 using Bookify.Application;
 using Bookify.Infrastructure;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.HttpOverrides;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
-
+builder.Services.AddProblemDetails(options =>
+    options.CustomizeProblemDetails = ctx =>
+    {
+        ctx.ProblemDetails.Extensions.Add("trace-id", ctx.HttpContext.TraceIdentifier);
+        ctx.ProblemDetails.Extensions.Add("instance", $"{ctx.HttpContext.Request.Method} {ctx.HttpContext.Request.Path}");
+    });
+builder.Services.AddExceptionHandler<GlobalExceptionHandling>();
 builder.Host.UseSerilog((context, configuration) =>
     configuration.ReadFrom.Configuration(context.Configuration));
 
@@ -44,13 +52,18 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+app.UseStaticFiles();
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.All
+});
 app.UseRequestContextLogging();
 
 app.UseSerilogRequestLogging();
 
-app.UseCustomExceptionHandler();
-
+// app.UseCustomExceptionHandler();
+app.UseExceptionHandler();
+app.UseStatusCodePages();
 app.UseAuthentication();
 
 app.UseAuthorization();
@@ -67,4 +80,4 @@ app.MapHealthChecks("health", new HealthCheckOptions
 app.Run();
 
 //In order to reference in the IntegrationTest project
-public partial class Program;
+public abstract partial class Program;

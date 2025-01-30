@@ -1,6 +1,18 @@
-﻿namespace Bookify.API;
+﻿using System.Runtime.InteropServices.JavaScript;
+using Bookify.Domain.Entities.Abstractions;
+using Microsoft.AspNetCore.Mvc;
 
-public class ApiController
+namespace Bookify.API;
+[ApiController]
+public class ApiController : ControllerBase
 {
-    
+    public IActionResult ProblemDetails(Error error)
+    {
+        return Problem(
+            type: "DomainErros",
+            detail: error.Name,
+            statusCode: error.StatusCode,
+            title: error.Code.ToString()
+            );
+    }
 }

@@ -7,18 +7,10 @@ using Microsoft.AspNetCore.Mvc;
 namespace Bookify.API.Controllers.Apartments;
 
 [Authorize]
-[ApiController]
 [ApiVersion(ApiVersions.V1)]
 [Route("api/v{version:apiVersion}/apartments")]
-public class ApartmentsController : ControllerBase
+public class ApartmentsController(ISender sender) : ApiController
 {
-    private readonly ISender _sender;
-
-    public ApartmentsController(ISender sender)
-    {
-        _sender = sender;
-    }
-
     [HttpGet]
     public async Task<IActionResult> SearchApartments(
         DateOnly startDate, 
@@ -27,7 +19,7 @@ public class ApartmentsController : ControllerBase
     {
         var query = new SearchApartmentsQuery(startDate, endDate);
 
-        var result = await _sender.Send(query, cancellationToken);
+        var result = await sender.Send(query, cancellationToken);
 
         return Ok(result.Value);
     }

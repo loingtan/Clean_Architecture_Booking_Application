@@ -19,8 +19,6 @@ internal sealed class PermissionAuthorizationHandler : AuthorizationHandler<Perm
         var authorizationService = scope.ServiceProvider.GetRequiredService<AuthorizationService>();
 
         var identityId = context.User.GetIdentityId();
-
-        //TODO: Introduce caching to avoid calling the database every time
         HashSet<string> permissions = await authorizationService.GetPermissionsForUserAsync(identityId);
 
         if (permissions.Contains(requirement.Permissions))

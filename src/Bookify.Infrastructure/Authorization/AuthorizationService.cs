@@ -31,9 +31,7 @@ internal sealed class AuthorizationService
                 Roles = user.Roles.ToList()
             })
             .FirstAsync();
-
         await _cacheService.SetAsync(cacheKey, roles);
-
         return roles;
     }
 
