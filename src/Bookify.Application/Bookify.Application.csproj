@@ -22,4 +22,10 @@
 		<InternalsVisibleTo Include="Bookify.Application.UnitTests" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="Apartments\CreateApartments\" />
+	  <Folder Include="Apartments\UpdateApartments\" />
+	  <Folder Include="Bookings\UpdateBooking\" />
+	</ItemGroup>
+
 </Project>

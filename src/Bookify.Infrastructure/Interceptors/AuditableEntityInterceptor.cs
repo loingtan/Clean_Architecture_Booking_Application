@@ -1,4 +1,5 @@
-﻿using Bookify.Application.Abstractions.Authentication;
+﻿#nullable enable
+using Bookify.Application.Abstractions.Authentication;
 using Bookify.Domain.Entities.Abstractions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
@@ -20,7 +21,6 @@ public class AuditableEntityInterceptor(
     public override ValueTask<InterceptionResult<int>> SavingChangesAsync(DbContextEventData eventData, InterceptionResult<int> result, CancellationToken cancellationToken = default)
     {
         UpdateEntities(eventData.Context);
-
         return base.SavingChangesAsync(eventData, result, cancellationToken);
     }
 

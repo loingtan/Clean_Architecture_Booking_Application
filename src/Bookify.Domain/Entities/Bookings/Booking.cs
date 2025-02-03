@@ -8,7 +8,7 @@ using Bookify.Domain.Shared;
 
 namespace Bookify.Domain.Entities.Bookings;
 
-public class Booking :  AuditableEntity<BookingId>
+public class Booking : AuditableEntity<BookingId>
 {
     private Booking(
         BookingId id,

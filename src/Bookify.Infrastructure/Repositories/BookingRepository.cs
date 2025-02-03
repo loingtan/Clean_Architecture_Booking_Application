@@ -5,7 +5,8 @@ using Bookify.Domain.Entities.Bookings.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 
 namespace Bookify.Infrastructure.Repositories;
-internal sealed class BookingRepository : Repository<Booking, BookingId>, IBookingRepository
+internal sealed class BookingRepository(ApplicationDbContext dbContext)
+    : Repository<Booking, BookingId>(dbContext), IBookingRepository
 {
     private static readonly BookingStatus[] ActiveBookingStatuses =
     {
@@ -13,10 +14,6 @@ internal sealed class BookingRepository : Repository<Booking, BookingId>, IBooki
         BookingStatus.Confirmed,
         BookingStatus.Completed
     };
-
-    public BookingRepository(ApplicationDbContext dbContext) : base(dbContext)
-    {
-    }
 
     public async Task<bool> IsOverlappingAsync(Apartment apartment, DateRange duration, CancellationToken cancellationToken = default)
     {

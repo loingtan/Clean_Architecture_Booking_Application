@@ -48,7 +48,6 @@ internal sealed class GetBookingQueryHandler : IQueryHandler<GetBookingQuery, Bo
             {
                 request.BookingId
             });
-
         //Resource-based Authorization
         if (booking is null || booking.UserId != _userContext.UserId)
             return Result.Failure<BookingResponse>(BookingErrors.NotFound);

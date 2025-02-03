@@ -6,6 +6,7 @@ namespace Bookify.API;
 [ApiController]
 public class ApiController : ControllerBase
 {
+    [NonAction]
     public IActionResult ProblemDetails(Error error)
     {
         return Problem(

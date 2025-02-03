@@ -1,14 +1,17 @@
 version: '3.4'
 
 services:
-  bookify.api:
-    image: ${DOCKER_REGISTRY-}bookifyapi
-    container_name: Bookify.API
-    build:
-      context: .
-      dockerfile: src/Bookify.API/Dockerfile
-    depends_on:
-      - bookify-db
+#  bookify.api:
+#    image: ${DOCKER_REGISTRY-}bookifyapi
+#    container_name: Bookify.API
+#    build:
+#      context: .
+#      dockerfile: src/Bookify.API/Dockerfile
+#    volumes:
+#      - .:/app
+#    command: ["dotnet", "watch","run", -v, "--project" , "src/Bookify.API/Bookify.API.csproj", "--urls", "https://*:443;http://*:80"]
+#    depends_on:
+#      - bookify-db
   
   bookify-db:
     image: postgres:16
@@ -31,7 +34,7 @@ services:
     command: >
       start-dev --import-realm --hostname-strict=false
     volumes:
-      - ./.containers/identity:/opt/keycloak/data
+      - ./.container/identity:/opt/keycloak/data
       - ./.files/bookify-realm-export.json:/opt/keycloak/data/import/bookify-realm-export.json
     ports:
       - 18080:8080

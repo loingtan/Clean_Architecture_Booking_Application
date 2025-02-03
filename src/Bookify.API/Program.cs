@@ -9,17 +9,16 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddProblemDetails(options =>
-    options.CustomizeProblemDetails = ctx =>
-    {
-        ctx.ProblemDetails.Extensions.Add("trace-id", ctx.HttpContext.TraceIdentifier);
-        ctx.ProblemDetails.Extensions.Add("instance", $"{ctx.HttpContext.Request.Method} {ctx.HttpContext.Request.Path}");
-    });
+builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandling>();
 builder.Host.UseSerilog((context, configuration) =>
     configuration.ReadFrom.Configuration(context.Configuration));
 
-builder.Services.AddControllers();
+builder.Services.AddControllers(cfg =>
+{
+    cfg.RespectBrowserAcceptHeader = true;
+    cfg.ReturnHttpNotAcceptable = true;
+}).AddXmlDataContractSerializerFormatters();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -27,7 +26,6 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
-//in order to configure swagger with different versions 
 builder.Services.ConfigureOptions<ConfigureSwaggerOptions>();
 
 var app = builder.Build();
@@ -45,10 +43,9 @@ if (app.Environment.IsDevelopment())
             var name = groupName.ToUpperInvariant();
             options.SwaggerEndpoint(url, name);
         }
-    });
-
-    app.ApplyMigrations();
-    app.SeedData();
+    }); 
+    app.ApplyMigrations(); 
+    await app.SeedDataAsync();
 }
 
 app.UseHttpsRedirection();

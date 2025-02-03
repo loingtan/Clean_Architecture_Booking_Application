@@ -32,6 +32,7 @@ using Asp.Versioning;
 using Bookify.Infrastructure.Idempotence;
 using Bookify.Infrastructure.Interceptors;
 using MediatR;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace Bookify.Infrastructure;
 public static class DependencyInjection
@@ -119,9 +120,10 @@ public static class DependencyInjection
     {
         var connectionString = configuration.GetConnectionString("Database") ??
             throw new ArgumentNullException(nameof(configuration));
-        services.AddSingleton<AuditableEntityInterceptor>();
-        services.AddDbContext<ApplicationDbContext>(options =>
+        services.AddScoped<ISaveChangesInterceptor, AuditableEntityInterceptor>();
+        services.AddDbContext<ApplicationDbContext>((sp, options) =>
         {
+            options.AddInterceptors(sp.GetServices<ISaveChangesInterceptor>());
             options.UseNpgsql(connectionString).UseSnakeCaseNamingConvention();
         });
 

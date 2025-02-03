@@ -25,7 +25,23 @@ public sealed class Apartment : AuditableEntity<ApartmentId>
     }
 
     private Apartment() { }
-
+    public static Apartment Create(
+        string name,
+        string description,
+        Address address,
+        Money price,
+        Money cleaningFee,
+        List<Amenity> amenities)
+    {
+        return new Apartment(
+            new ApartmentId(Guid.NewGuid()),
+            name,
+            description,
+            address,
+            price,
+            cleaningFee,
+            amenities);
+    }
     public string Name { get; private set; }
     public string Description { get; private set; }
     public Address Address { get; private set; }

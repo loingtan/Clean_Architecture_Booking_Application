@@ -10,44 +10,28 @@ using Bookify.Domain.Entities.Users;
 
 namespace Bookify.Application.Bookings.ReserveBooking;
 
-public sealed class ReserveBookingCommandHandler : ICommandHandler<ReserveBookingCommand, Guid>
+public sealed class ReserveBookingCommandHandler(
+    IUserRepository userRepository,
+    IApartmentRepository apartmentRepository,
+    IBookingRepository bookingRepository,
+    IUnitOfWork unitOfWork,
+    PricingService pricingService,
+    IDateTimeProvider dateProvider)
+    : ICommandHandler<ReserveBookingCommand, Guid>
 {
-    private readonly IUserRepository _userRepository;
-    private readonly IApartmentRepository _apartmentRepository;
-    private readonly IBookingRepository _bookingRepository;
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly PricingService _pricingService;
-    private readonly IDateTimeProvider _dateProvider;
-
-    public ReserveBookingCommandHandler(
-        IUserRepository userRepository,
-        IApartmentRepository apartmentRepository,
-        IBookingRepository bookingRepository,
-        IUnitOfWork unitOfWork,
-        PricingService pricingService,
-        IDateTimeProvider dateProvider)
-    {
-        _userRepository = userRepository;
-        _apartmentRepository = apartmentRepository;
-        _bookingRepository = bookingRepository;
-        _unitOfWork = unitOfWork;
-        _pricingService = pricingService;
-        _dateProvider = dateProvider;
-    }
-
     public async Task<Result<Guid>> Handle(ReserveBookingCommand request, CancellationToken cancellationToken)
     {
-        var user = await _userRepository.GetByIdAsync(new UserId(request.UserId), cancellationToken);
+        var user = await userRepository.GetByIdAsync(new UserId(request.UserId), cancellationToken);
         if (user is null)
             return Result.Failure<Guid>(UserErrors.NotFound);
 
-        var apartment = await _apartmentRepository.GetByIdAsync(new ApartmentId(request.ApartmentId), cancellationToken);
+        var apartment = await apartmentRepository.GetByIdAsync(new ApartmentId(request.ApartmentId), cancellationToken);
         if (apartment is null)
             return Result.Failure<Guid>(ApartmentErrors.NotFound);
 
         var duration = DateRange.From(request.StartDate, request.EndDate);
 
-        if (await _bookingRepository.IsOverlappingAsync(apartment, duration, cancellationToken))
+        if (await bookingRepository.IsOverlappingAsync(apartment, duration, cancellationToken))
             return Result.Failure<Guid>(BookingErrors.Overlap);
 
         try
@@ -56,12 +40,12 @@ public sealed class ReserveBookingCommandHandler : ICommandHandler<ReserveBookin
             apartment,
             user.Id,
             duration,
-            _dateProvider.UtcNow,
-            _pricingService);
+            dateProvider.UtcNow,
+            pricingService);
 
-            _bookingRepository.Add(booking);
+            bookingRepository.Add(booking);
 
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await unitOfWork.SaveChangesAsync(cancellationToken);
 
             return booking.Id.Value;
         }

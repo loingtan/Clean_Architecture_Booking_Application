@@ -8,11 +8,12 @@ public sealed class PermissionConfiguration : IEntityTypeConfiguration<Permissio
     public void Configure(EntityTypeBuilder<Permission> builder)
     {
         builder.ToTable("permissions");
-
         builder.HasKey(x => x.Id);
-
-
-        //Seed initial data
+        builder.Property(x => x.Name)
+            .HasMaxLength(200);
         builder.HasData(Permission.UsersRead);
+        builder.HasData(Permission.UsersWrite);
+        builder.HasData(Permission.RolesRead);
+        builder.HasData(Permission.RolesWrite);
     }
 }

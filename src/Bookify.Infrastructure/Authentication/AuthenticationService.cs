@@ -4,28 +4,25 @@ using Bookify.Infrastructure.Authentication.Models;
 using System.Net.Http.Json;
 
 namespace Bookify.Infrastructure.Authentication;
-internal sealed class AuthenticationService : IAuthenticationService
+internal sealed class AuthenticationService(HttpClient httpClient) : IAuthenticationService
 {
     private const string PasswordCredentialType = "password";
-    private readonly HttpClient _httpClient;
-
-    public AuthenticationService(HttpClient httpClient) => _httpClient = httpClient;
 
     public async Task<string> RegisterAsync(User user, string password, CancellationToken cancellationToken = default)
     {
         var userRepresentationModel = UserRepresentationModel.FromUser(user);
 
-        userRepresentationModel.Credentials = new CredentialRepresentationModel[]
-        {
-            new()
+        userRepresentationModel.Credentials =
+        [
+            new CredentialRepresentationModel
             {
                 Value = password,
                 Temporary = false,
                 Type = PasswordCredentialType
             }
-        };
-
-        var response = await _httpClient.PostAsJsonAsync(
+        ];
+        
+        var response = await httpClient.PostAsJsonAsync(
             "users",
             userRepresentationModel,
             cancellationToken);

@@ -5,19 +5,12 @@ using Bookify.Domain.Entities.Users;
 using Bookify.Domain.Entities.Users.ValueObjects;
 
 namespace Bookify.Application.Users.RegisterUser;
-internal sealed class RegisterUserCommandHandler : ICommandHandler<RegisterUserCommand, Guid>
+internal sealed class RegisterUserCommandHandler(
+    IAuthenticationService authenticationService,
+    IUserRepository userRepository,
+    IUnitOfWork unitOfWork)
+    : ICommandHandler<RegisterUserCommand, Guid>
 {
-    private readonly IAuthenticationService _authenticationService;
-    private readonly IUserRepository _userRepository;
-    private readonly IUnitOfWork _unitOfWork;
-
-    public RegisterUserCommandHandler(IAuthenticationService authenticationService, IUserRepository userRepository, IUnitOfWork unitOfWork)
-    {
-        _authenticationService = authenticationService;
-        _userRepository = userRepository;
-        _unitOfWork = unitOfWork;
-    }
-
     public async Task<Result<Guid>> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
     {
         var user = User.Create(
@@ -25,16 +18,16 @@ internal sealed class RegisterUserCommandHandler : ICommandHandler<RegisterUserC
             request.LastName,
             new Email(request.Email));
 
-        var identityId = await _authenticationService.RegisterAsync(
+        var identityId = await authenticationService.RegisterAsync(
             user,
             request.Password,
             cancellationToken);
 
         user.SetIdentityId(identityId);
 
-        _userRepository.Add(user);
+        userRepository.Add(user);
 
-        await _unitOfWork.SaveChangesAsync();
+        await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return user.Id.Value;
     }

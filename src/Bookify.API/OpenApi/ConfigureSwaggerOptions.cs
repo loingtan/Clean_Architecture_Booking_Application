@@ -31,7 +31,7 @@ public sealed class ConfigureSwaggerOptions : IConfigureNamedOptions<SwaggerGenO
     {
         var openApiInfo = new OpenApiInfo
         {
-            Title = $"Bookify.Api v{description.ApiVersion}",
+            Title = $"Bookify.Api v{description.ApiVersion} + 5",
             Version = description.ApiVersion.ToString()
         };
 

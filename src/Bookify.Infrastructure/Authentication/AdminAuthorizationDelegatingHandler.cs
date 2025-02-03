@@ -5,11 +5,9 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 
 namespace Bookify.Infrastructure.Authentication;
-public sealed class AdminAuthorizationDelegatingHandler : DelegatingHandler
+public sealed class AdminAuthorizationDelegatingHandler(IOptions<KeycloakOptions> keycloakOptions) : DelegatingHandler
 {
-    private readonly KeycloakOptions _keycloakOptions;
-
-    public AdminAuthorizationDelegatingHandler(IOptions<KeycloakOptions> keycloakOptions) => _keycloakOptions = keycloakOptions.Value;
+    private readonly KeycloakOptions _keycloakOptions = keycloakOptions.Value;
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
@@ -39,7 +37,7 @@ public sealed class AdminAuthorizationDelegatingHandler : DelegatingHandler
 
         var authorizationRequest = new HttpRequestMessage(
             HttpMethod.Post,
-            new Uri("http://bookify-idp:8080/auth/realms/bookify/protocol/openid-connect/token"))
+            new Uri(_keycloakOptions.TokenUrl))
         { 
             Content = authorizationRequestContext 
         };
@@ -48,6 +46,6 @@ public sealed class AdminAuthorizationDelegatingHandler : DelegatingHandler
 
         authorizationResponse.EnsureSuccessStatusCode();
 
-        return await authorizationResponse.Content.ReadFromJsonAsync<AuthorizationToken>() ?? throw new ApplicationException();
+        return await authorizationResponse.Content.ReadFromJsonAsync<AuthorizationToken>(cancellationToken: cancellationToken) ?? throw new ApplicationException();
     }
 }

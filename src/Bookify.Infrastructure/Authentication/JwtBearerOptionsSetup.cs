@@ -1,12 +1,11 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Bookify.Application.Exceptions;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
 
 namespace Bookify.Infrastructure.Authentication;
-public class JwtBearerOptionsSetup : IConfigureNamedOptions<JwtBearerOptions>
+public class JwtBearerOptionsSetup(IOptions<AuthenticationOptions> options) : IConfigureNamedOptions<JwtBearerOptions>
 {
-    private readonly AuthenticationOptions _options;
-
-    public JwtBearerOptionsSetup(IOptions<AuthenticationOptions> options) => _options = options.Value;
+    private readonly AuthenticationOptions _options = options.Value;
 
     public void Configure(string name, JwtBearerOptions options) => Configure(options);
 
@@ -16,5 +15,14 @@ public class JwtBearerOptionsSetup : IConfigureNamedOptions<JwtBearerOptions>
         options.MetadataAddress = _options.MetadataUrl;
         options.RequireHttpsMetadata = _options.RequireHttpsMetadata;
         options.TokenValidationParameters.ValidIssuer = _options.ValidIssuer;
+        options.Events = new JwtBearerEvents
+        {
+            OnChallenge = context =>
+            {
+                context.HandleResponse();
+                throw new UnauthorizedException("User is not authenticated.");
+
+            }
+        };
     }
 }

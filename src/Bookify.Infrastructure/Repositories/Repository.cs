@@ -3,7 +3,7 @@ using Bookify.Infrastructure.Specifications;
 using Microsoft.EntityFrameworkCore;
 
 namespace Bookify.Infrastructure.Repositories;
-internal abstract class Repository<TEntity, TEntityId>(ApplicationDbContext dbContext)
+public abstract class Repository<TEntity, TEntityId>(ApplicationDbContext dbContext)
     where TEntity : AuditableEntity<TEntityId>
     where TEntityId : class
 {

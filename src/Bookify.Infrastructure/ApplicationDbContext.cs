@@ -37,8 +37,6 @@ public sealed class ApplicationDbContext(
     {
         try
         {
-            //First process the domain events and adding them to ChangeTracker as Outbox Messages,
-            //then persisting everything in the database in a single transaction "atomic operation" 
             AddDomainEventsAsOutboxMessages();
 
             var result = await base.SaveChangesAsync(cancellationToken);

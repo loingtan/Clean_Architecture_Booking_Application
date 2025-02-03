@@ -1,49 +1,61 @@
 ﻿using Bogus;
 using Bookify.Application.Abstractions.Data;
+using Bookify.Domain.Entities.Apartments;
 using Bookify.Domain.Entities.Apartments.Enums;
-using Dapper;
+using Bookify.Domain.Entities.Apartments.ValueObjects;
+using Bookify.Domain.Shared;
+using Bookify.Infrastructure;
+using Bookify.Infrastructure.Repositories;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.EntityFrameworkCore;
 
-namespace Bookify.API.Extensions;
-
-public static class SeedDataExtension
+namespace Bookify.API.Extensions
 {
-    public static void SeedData(this IApplicationBuilder app)
+    public static class SeedDataExtension
     {
-        using var scope = app.ApplicationServices.CreateScope();
-
-        var sqlConnectionFactory = scope.ServiceProvider.GetRequiredService<ISqlConnectionFactory>();
-        using var connection = sqlConnectionFactory.CreateConnection();
-
-        var faker = new Faker();
-
-        List<object> apartments = new();
-        for (int i = 0; i < 100; i++)
+        public static async Task SeedDataAsync(this IApplicationBuilder app)
         {
-            apartments.Add(new
+            try
             {
-                Id = Guid.NewGuid(),
-                Name = faker.Company.CompanyName(),
-                Description = "Amazing view",
-                Country = faker.Address.Country(),
-                State = faker.Address.State(),
-                ZipCode = faker.Address.ZipCode(),
-                City = faker.Address.City(),
-                Street = faker.Address.StreetAddress(),
-                PriceAmount = faker.Random.Decimal(50, 1000),
-                PriceCurrency = "USD",
-                CleaningFeeAmount = faker.Random.Decimal(25, 200),
-                CleaningFeeCurrency = "USD",
-                Amenities = new List<int> { (int)Amenity.Parking, (int)Amenity.MountainView },
-                LastBookedOn = DateTime.MinValue
-            });
+                
+                using var scope = app.ApplicationServices.CreateScope();
+                var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                var apartmentRepository = scope.ServiceProvider.GetRequiredService<IApartmentRepository>();
+                var faker = new Faker();
+                if (await dbContext.Apartments.AnyAsync())
+                {
+                    return;
+                }
+                for (var i = 0; i < 100; i++)
+                {
+                    var amenities = new List<Amenity>
+                    {
+                        Amenity.SwimmingPool,
+                        Amenity.Parking,
+                        Amenity.Gym,
+                        Amenity.WiFi
+                    };
+                    var apartment = Apartment.Create(
+                        faker.Company.CompanyName(),
+                        faker.Lorem.Sentence(),
+                        Address.From(
+                            faker.Address.StreetAddress(),
+                            faker.Address.City(),
+                            faker.Address.State(),
+                            faker.Address.Country(),
+                            faker.Address.ZipCode()
+                        ),
+                        Money.From(faker.Random.Decimal(50, 1000), Currency.Usd),
+                        Money.From(faker.Random.Decimal(25, 200), Currency.Usd),
+                        amenities);
+                    apartmentRepository.Add(apartment);
+                }
+                await dbContext.SaveChangesAsync();
+            }
+            catch (Exception e)
+            {
+                throw new Exception("An error occurred while seeding the database", e);
+            }
         }
-
-        const string sql = """
-                INSERT INTO public.apartments
-                (id, "name", description, address_country, address_state, address_zip_code, address_city, address_street, price_amount, price_currency, cleaning_fee_amount, cleaning_fee_currency, amenities, last_booked_on_utc)
-                VALUES(@Id, @Name, @Description, @Country, @State, @ZipCode, @City, @Street, @PriceAmount, @PriceCurrency, @CleaningFeeAmount, @CleaningFeeCurrency, @Amenities, @LastBookedOn);
-                """;
-
-        connection.Execute(sql, apartments);
     }
 }
