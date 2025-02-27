@@ -29,6 +29,7 @@ using Microsoft.AspNetCore.Authorization;
 using Bookify.Application.Abstractions.Caching;
 using Bookify.Infrastructure.Caching;
 using Asp.Versioning;
+using Bookify.Infrastructure.BackgroundJob;
 using Bookify.Infrastructure.Idempotence;
 using Bookify.Infrastructure.Interceptors;
 using MediatR;

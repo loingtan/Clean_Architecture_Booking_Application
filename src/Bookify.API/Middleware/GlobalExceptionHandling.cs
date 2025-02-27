@@ -1,30 +1,17 @@
-﻿using Bookify.Api.Middleware;
-using Bookify.Application.Exceptions;
+﻿using Bookify.Application.Exceptions;
 using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Bookify.API.Middleware
 {
-    public class GlobalExceptionHandling : IExceptionHandler
+    public class GlobalExceptionHandling(
+        IProblemDetailsService problemDetailsService,
+        ILogger<GlobalExceptionHandling> logger)
+        : IExceptionHandler
     {
-        private readonly IProblemDetailsService _problemDetailsService;
-        private readonly ILogger<GlobalExceptionHandling> _logger;
-
-        public GlobalExceptionHandling(IProblemDetailsService problemDetailsService, ILogger<GlobalExceptionHandling> logger)
-        {
-            _problemDetailsService = problemDetailsService;
-            _logger = logger;
-        }
-
         public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
         {
             var exceptionDetails = GetExceptionDetails(exception);
-            _logger.LogError(exception, "Exception occurred: {Message}", exception.Message);
+            logger.LogError(exception, "Exception occurred: {Message}", exception.Message);
             var problemDetailsContext = new ProblemDetailsContext
             {
                 HttpContext = httpContext,
@@ -38,14 +25,13 @@ namespace Bookify.API.Middleware
                     {
                         ["traceId"] = httpContext.TraceIdentifier,
                         ["instance"] = $"{httpContext.Request.Method} {httpContext.Request.Path}",
-                        // Attach errors if they exist; otherwise, return an empty object.
                         ["errors"] = exceptionDetails.Errors ?? new object()
                     }
                 },
                 Exception = exception
             };
             
-            return await _problemDetailsService.TryWriteAsync(problemDetailsContext);
+            return await problemDetailsService.TryWriteAsync(problemDetailsContext);
         }
 
         /// <summary>

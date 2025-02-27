@@ -1,12 +1,11 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Bookify.Infrastructure.Outbox;
+using Microsoft.Extensions.Options;
 using Quartz;
 
-namespace Bookify.Infrastructure.Outbox;
-public class ProcessOutboxMessageJobSetup : IConfigureOptions<QuartzOptions>
+namespace Bookify.Infrastructure.BackgroundJob;
+public class ProcessOutboxMessageJobSetup(IOptions<OutboxOptions> outboxOptions) : IConfigureOptions<QuartzOptions>
 {
-    private readonly OutboxOptions _outboxOptions;
-
-    public ProcessOutboxMessageJobSetup(IOptions<OutboxOptions> outboxOptions) => _outboxOptions = outboxOptions.Value;
+    private readonly OutboxOptions _outboxOptions = outboxOptions.Value;
 
     public void Configure(QuartzOptions options)
     {

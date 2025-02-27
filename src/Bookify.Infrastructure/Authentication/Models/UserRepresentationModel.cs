@@ -40,7 +40,7 @@ public sealed class UserRepresentationModel
             EmailVerified = true,
             CreatedTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
             Attributes = new Dictionary<string, List<string>>(),
-            RequiredActions = Array.Empty<string>()
+            RequiredActions = []
         };
 
 }

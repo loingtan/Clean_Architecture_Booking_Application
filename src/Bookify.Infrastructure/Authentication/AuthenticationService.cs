@@ -30,7 +30,7 @@ internal sealed class AuthenticationService(HttpClient httpClient) : IAuthentica
         return ExtractIdentityIdFromLocationHeader(response);
     }
 
-    private string ExtractIdentityIdFromLocationHeader(HttpResponseMessage response)
+    private static string ExtractIdentityIdFromLocationHeader(HttpResponseMessage response)
     {
         const string usersSegmentName = "users/";
 
@@ -41,8 +41,6 @@ internal sealed class AuthenticationService(HttpClient httpClient) : IAuthentica
         var userSegmentValueIndex = locationHeader.IndexOf(
             usersSegmentName,
             StringComparison.InvariantCultureIgnoreCase);
-
-        return locationHeader.Substring(
-            userSegmentValueIndex + usersSegmentName.Length);        
+        return locationHeader[(userSegmentValueIndex + usersSegmentName.Length)..];        
     }
 }

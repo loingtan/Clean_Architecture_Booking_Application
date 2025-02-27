@@ -26,6 +26,8 @@
 	  <Folder Include="Apartments\CreateApartments\" />
 	  <Folder Include="Apartments\UpdateApartments\" />
 	  <Folder Include="Bookings\UpdateBooking\" />
+	  <Folder Include="Users\ChangePasswordUser\" />
+	  <Folder Include="Users\VerifyUSer\" />
 	</ItemGroup>
 
 </Project>

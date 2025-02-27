@@ -42,8 +42,6 @@ public class BookingsController : ApiController
 
         var result = await _sender.Send(command, cancellationToken);
 
-        if (result.IsFailure) return ProblemDetails(result.Error);
-
-        return CreatedAtAction(nameof(GetBooking), new { id = result.Value }, result.Value);
+        return result.IsFailure ? ProblemDetails(result.Error) : CreatedAtAction(nameof(GetBooking), new { id = result.Value }, result.Value);
     }
 }
