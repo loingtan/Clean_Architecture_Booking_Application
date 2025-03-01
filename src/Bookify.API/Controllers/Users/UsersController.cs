@@ -1,4 +1,5 @@
 ﻿using Asp.Versioning;
+using Bookify.Application.Users.GetAllUsers;
 using Bookify.Application.Users.GetLoggedInUser;
 using Bookify.Application.Users.LogInUser;
 using Bookify.Application.Users.RegisterUser;
@@ -63,6 +64,18 @@ public class UsersController(ISender sender) : ApiController
 
         var result = await sender.Send(command, cancellationToken);
 
+        return result.IsFailure ? ProblemDetails(result.Error) : Ok(result.Value);
+    }
+
+    [HttpGet("")]
+    public async Task<IActionResult> GetAllUsers([FromQuery] GetAllUsersRequest request, CancellationToken cancellationToken)
+    {
+        var query = new GetAllUsersQuery()
+        {
+            PageNumber = request.pageNumber,
+            PageSize = request.pageSize,
+        };
+        var result = await sender.Send(query, cancellationToken);
         return result.IsFailure ? ProblemDetails(result.Error) : Ok(result.Value);
     }
 }
