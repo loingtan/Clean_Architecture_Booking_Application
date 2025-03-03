@@ -3,31 +3,78 @@ using Bookify.Application.Apartments.CreateApartment;
 using Bookify.Application.Apartments.SearchApartments;
 using Bookify.Application.Apartments.UpdateApartment;
 using Bookify.Application.Apartments.GetApartment;
+using Bookify.Application.Common.Interfaces;
+using Bookify.Application.Common.Models;
 using Mapster;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Collections.Generic;
+using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Bookify.API.Controllers.Apartments;
 
 [Authorize]
 [ApiVersion(ApiVersions.V1)]
 [Route("api/v{version:apiVersion}/apartments")]
-public class ApartmentsController(ISender sender) : ApiController
+public class ApartmentsController(ISender sender, IDataShaper<Application.Apartments.SearchApartments.ApartmentResponse> dataShaper) : ApiController
 {
     [HttpGet]
     public async Task<IActionResult> SearchApartments(
-        DateOnly startDate,
-        DateOnly endDate,
+        [FromQuery] ApartmentParameters parameters,
         CancellationToken cancellationToken)
     {
-        var query = new SearchApartmentsQuery(startDate, endDate);
+        var query = new SearchApartmentsQuery(
+            parameters.StartDate ?? DateOnly.FromDateTime(DateTime.Today),
+            parameters.EndDate ?? DateOnly.FromDateTime(DateTime.Today.AddDays(1)),
+            parameters.PageNumber,
+            parameters.PageSize,
+            parameters.Country,
+            parameters.City);
 
         var result = await sender.Send(query, cancellationToken);
 
+        if (result.IsFailure)
+            return ProblemDetails(result.Error);
+
+        // Apply data shaping if fields parameter is provided
+        if (!string.IsNullOrEmpty(parameters.Fields))
+        {
+            var shapedData = dataShaper.ShapeData(result.Value.Items, parameters.Fields);
+
+            Response.Headers.Add("X-Pagination",
+                JsonSerializer.Serialize(new
+                {
+                    result.Value.TotalCount,
+                    result.Value.PageSize,
+                    result.Value.CurrentPage,
+                    result.Value.TotalPages,
+                    result.Value.HasNext,
+                    result.Value.HasPrevious
+                }));
+
+            return Ok(shapedData);
+        }
+
+        // Standard pagination response
+        Response.Headers.Add("X-Pagination",
+            JsonSerializer.Serialize(new
+            {
+                result.Value.TotalCount,
+                result.Value.PageSize,
+                result.Value.CurrentPage,
+                result.Value.TotalPages,
+                result.Value.HasNext,
+                result.Value.HasPrevious
+            }));
+
         return Ok(result.Value);
     }
+
     [HttpPost]
     public async Task<IActionResult> CreateApartment(
         CreateApartmentRequest request,
@@ -64,7 +111,7 @@ public class ApartmentsController(ISender sender) : ApiController
         var updateRequest = new UpdateApartmentRequest();
 
         patchDocument.ApplyTo(updateRequest);
-        
+
         if (!TryValidateModel(updateRequest))
             return BadRequest(ModelState);
         var command = updateRequest.Adapt<UpdateApartmentCommand>() with { Id = id };

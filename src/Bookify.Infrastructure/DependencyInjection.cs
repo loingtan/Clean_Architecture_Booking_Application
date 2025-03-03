@@ -21,7 +21,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Quartz;
-
 using AuthenticationService = Bookify.Infrastructure.Authentication.AuthenticationService;
 using IAuthenticationService = Bookify.Application.Abstractions.Authentication.IAuthenticationService;
 using AuthenticationOptions = Bookify.Infrastructure.Authentication.AuthenticationOptions;
@@ -34,6 +33,8 @@ using Bookify.Infrastructure.Idempotence;
 using Bookify.Infrastructure.Interceptors;
 using MediatR;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Bookify.Application.Common.Interfaces;
+using Bookify.Infrastructure.DataShaping;
 
 namespace Bookify.Infrastructure;
 public static class DependencyInjection
@@ -44,6 +45,7 @@ public static class DependencyInjection
     {
         services.AddTransient<IDateTimeProvider, DateTimeProvider>();
         services.AddTransient<IEmailService, EmailService>();
+        services.AddScoped(typeof(IDataShaper<>), typeof(DataShaper<>));
         AddIdempotence(services);
         AddPersistence(services, configuration);
 
