@@ -1,7 +1,12 @@
 ﻿using Asp.Versioning;
+using Bookify.Application.Apartments.CreateApartment;
 using Bookify.Application.Apartments.SearchApartments;
+using Bookify.Application.Apartments.UpdateApartment;
+using Bookify.Application.Apartments.GetApartment;
+using Mapster;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Bookify.API.Controllers.Apartments;
@@ -13,7 +18,7 @@ public class ApartmentsController(ISender sender) : ApiController
 {
     [HttpGet]
     public async Task<IActionResult> SearchApartments(
-        DateOnly startDate, 
+        DateOnly startDate,
         DateOnly endDate,
         CancellationToken cancellationToken)
     {
@@ -28,19 +33,7 @@ public class ApartmentsController(ISender sender) : ApiController
         CreateApartmentRequest request,
         CancellationToken cancellationToken)
     {
-        var command = new CreateApartmentCommand(
-            request.Name,
-            request.Description,
-            request.Price,
-            request.Rooms,
-            request.Beds,
-            request.Bathrooms,
-            request.Address,
-            request.City,
-            request.Country,
-            request.Latitude,
-            request.Longitude);
-
+        var command = request.Adapt<CreateApartmentCommand>();
         var result = await sender.Send(command, cancellationToken);
 
         return result.IsFailure ? ProblemDetails(result.Error) : CreatedAtAction(nameof(GetApartment), new { id = result.Value }, result.Value);
@@ -54,5 +47,30 @@ public class ApartmentsController(ISender sender) : ApiController
 
         return result.IsSuccess ? Ok(result.Value) : ProblemDetails(result.Error);
     }
+
     [HttpPatch("{id}")]
+    public async Task<IActionResult> UpdateApartment(
+        Guid id,
+        [FromBody] JsonPatchDocument<UpdateApartmentRequest> patchDocument,
+        CancellationToken cancellationToken)
+    {
+
+        var getQuery = new GetApartmentQuery(id);
+        var getResult = await sender.Send(getQuery, cancellationToken);
+
+        if (getResult.IsFailure)
+            return ProblemDetails(getResult.Error);
+
+        var updateRequest = new UpdateApartmentRequest();
+
+        patchDocument.ApplyTo(updateRequest);
+        
+        if (!TryValidateModel(updateRequest))
+            return BadRequest(ModelState);
+        var command = updateRequest.Adapt<UpdateApartmentCommand>() with { Id = id };
+        var result = await sender.Send(command, cancellationToken);
+
+        return result.IsSuccess ? NoContent() : ProblemDetails(result.Error);
+    }
 }
+
