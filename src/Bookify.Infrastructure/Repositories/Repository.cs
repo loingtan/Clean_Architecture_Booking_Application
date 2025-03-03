@@ -9,7 +9,7 @@ public abstract class Repository<TEntity, TEntityId>(ApplicationDbContext dbCont
 {
     protected readonly ApplicationDbContext DbContext = dbContext;
 
-    public async Task<TEntity> GetByIdAsync(TEntityId id, CancellationToken cancellationToken = default)
+    public virtual async Task<TEntity> GetByIdAsync(TEntityId id, CancellationToken cancellationToken = default)
     {
         return await DbContext
             .Set<TEntity>()

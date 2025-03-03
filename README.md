@@ -1,206 +1,165 @@
-# Bookify Booking System
+# Bookify - Modern Apartment Booking System
 
 ## Overview
 
-`Bookify` is a modern booking system built with Clean Architecture principles, designed for managing apartment reservations. It leverages CQRS for separation of concerns, integrates with external services like Keycloak for authentication, and uses technologies such as Redis for caching and Jaeger for distributed tracing. The project emphasizes scalability, testability, and maintainability.
-## Project
-- **Rich Domain Models**  
-  - Business logic is encapsulated within the domain layer for better cohesion and maintainability.
-  - Entities like `Apartment`, `Booking`, and `User` encapsulate business logic.
-- **CQRS**  
-  - Separation of commands and queries improves scalability and clarity.
-  - Commands (e.g., `ReserveBookingCommand`) and queries (e.g., `SearchApartmentsQuery`) are separated.
-- **Background Jobs**  
-  Tasks such as reminders or cleanup are scheduled using Quartz.
-- **Distributed Tracing**  
-  Jaeger monitors request flows across services for improved observability.
-- **Caching**  
-  - **Distributed Caching:** Uses Redis for high-speed data retrieval.
-  - **In-memory Caching:** Enhances performance with local caching.
-- **HTTP Caching**  
-  Reduces server load by caching responses.
-- **Authentication**  
-  Managed via Keycloak, an external identity provider.
-- **Authorization**  
-  Supports role-based, permission-based, and resource-based access controls.
-- **Testing**  
-  - **Unit Tests:** Validates domain and application logic.
-  - **Integration Tests:** Utilizes Docker containers.
-  - **Functional Tests:** Provides end-to-end validation.
-  - **Architecture Tests:** Uses NetArchTest to enforce design rules.
-- **Logging**  
-  Structured logging with Serilog and log aggregation with Seq ensures clear and actionable logs.
-- **Health Checks**  
-  Accessible at `/health` to monitor the status of the database, Redis, and Keycloak.
-- **API Versioning**  
-  Maintains backward compatibility as the API evolves.
-- **API Documentation**  
-  Interactive documentation and testing capabilities are provided via Swagger.
-## Planned Features
-The following features are in progress to further enhance system capabilities:
-- **API Development**
+Bookify is a sophisticated booking platform built with Clean Architecture principles, designed for efficient apartment reservation management. It leverages Command Query Responsibility Segregation (CQRS) to separate read and write operations, integrates with external services like Keycloak for authentication, and utilizes advanced technologies such as Redis for caching and Jaeger for distributed tracing. The architecture emphasizes scalability, testability, and long-term maintainability.
+
+## Key Features
+
+### Core Architecture
+- **Rich Domain Models**
+  - Business logic encapsulated within domain entities (`Apartment`, `Booking`, `User`)
+  - Value objects and domain services for complex business rules
+
+- **CQRS Implementation**
+  - Command handlers for write operations (e.g., `ReserveBookingCommand`)
+  - Query handlers for read operations (e.g., `SearchApartmentsQuery`)
+  - Clear separation of concerns for improved scalability
+
+### Performance & Reliability
+- **Background Processing**
+  - Scheduled tasks via Quartz for booking reminders and maintenance
   
-- **Event Sourcing**  
-  Implements auditing and tracks historical changes (e.g., reservation updates).
-- **HATEOAS**  
-  Adds hypermedia links in API responses to guide clients on available actions.
-- **OpenTelemetry**  
-  Offers advanced monitoring and tracing across distributed systems.
-- **Message Queue**  
-  Enables asynchronous processing for tasks like notifications or payments.
-- **Throttling and Rate Limiting**  
-  Prevents API abuse and ensures fair usage.
-- **Content Negotiation**  
-  Supports multiple response formats (e.g., JSON, XML).
-- **I18n (Internationalization)**  
-  Provides multi-language support for global accessibility.
-- **Webhooks**  
-  Sends real-time notifications to external systems for events such as new reservations.
-- **Data Shaping**  
-  Allows clients to specify which fields to include in API responses.
-- **Search Engine Integration**  
-  Incorporates advanced search capabilities using Lucene .NET or ElasticSearch.
-# API Developments
+- **Caching Strategy**
+  - Distributed caching with Redis for shared data
+  - In-memory caching for frequently accessed resources
+  - HTTP caching to reduce server load
 
-## Authentication & Authorization
+- **Observability**
+  - Distributed tracing with Jaeger for cross-service request flows
+  - Structured logging with Serilog
+  - Log aggregation via Seq for centralized analysis
 
-### POST /auth/login
-Authenticate users by accepting credentials (e.g., email and password) and returning a JWT or session token. (done)
+### Security
+- **Authentication**
+  - Integration with Keycloak as identity provider
+  - JWT token management
 
-### POST /auth/register
-Register a new user with required details and send a confirmation email if needed. (done)
+- **Authorization**
+  - Role-based access control
+  - Permission-based authorization
+  - Resource-based security
 
-### POST /auth/refresh
-Allow clients to refresh their tokens for continued access without re-login.
+### Quality Assurance
+- **Comprehensive Testing Suite**
+  - Unit tests for domain and application logic
+  - Integration tests with containerized dependencies
+  - End-to-end functional tests
+  - Architecture tests via NetArchTest to enforce design constraints
 
-### POST /auth/logout
-Invalidate the current token or session, logging the user out securely.
+### API Design
+- **Versioning**
+  - Support for multiple API versions to maintain backward compatibility
+  
+- **Documentation**
+  - Interactive Swagger UI for testing and exploration
+  
+- **Health Monitoring**
+  - Dedicated `/health` endpoint for infrastructure status checks
 
----
+## Implementation Roadmap
 
-## User Management
+- [x] Core domain model implementation
+- [x] CQRS architecture setup
+- [x] Authentication integration with Keycloak
+- [x] Basic API endpoints
+  - [x] Authentication (Login/Register)
+  - [x] Apartment search
+  - [x] Booking creation
+- [ ] Advanced API endpoints
+  - [ ] User management
+  - [ ] Booking operations
+  - [ ] Reviews and feedback
+  - [ ] Administrative controls
+- [ ] Event Sourcing for audit trails
+- [ ] HATEOAS implementation for API discoverability
+- [ ] OpenTelemetry integration
+- [ ] Message Queue integration
+- [ ] API rate limiting and throttling
+- [ ] Content negotiation
+- [ ] Internationalization (i18n)
+- [ ] Webhook support for external integrations
+- [ ] Data shaping for response customization
+- [ ] Search engine integration
 
-### GET /users/me
-Retrieve the profile of the currently authenticated user.
+## API Documentation
 
-### PUT /users/me
-Update profile details such as name, email, or preferences.
+### Authentication & Authorization
+| Endpoint | Method | Description | Status |
+|----------|--------|-------------|--------|
+| `/auth/login` | POST | Authenticate users and return JWT | ✅ |
+| `/auth/register` | POST | Register new users | ✅ |
+| `/auth/refresh` | POST | Refresh authentication tokens | ❌ |
+| `/auth/logout` | POST | Invalidate current session | ❌ |
 
-### GET /users/{id}
-For admin or profile-viewing purposes, retrieve a user’s details by ID.
+### User Management
+| Endpoint | Method | Description | Status |
+|----------|--------|-------------|--------|
+| `/users/me` | GET | Get current user profile | ❌ |
+| `/users/me` | PUT | Update user profile | ❌ |
+| `/users/{id}` | GET | Get user by ID | ❌ |
+| `/users` | GET | List users | ❌ |
 
-### GET /users
-List all users (typically restricted to admin roles or for public profiles with limited info).
+### Apartment Listings & Search
+| Endpoint | Method | Description | Status |
+|----------|--------|-------------|--------|
+| `/apartments` | GET | List available apartments | ✅ |
+| `/apartments/{id}` | GET | Get apartment details | ❌ |
+| `/apartments/search` | POST | Advanced search | ❌ |
 
----
+### Booking Operations
+| Endpoint | Method | Description | Status |
+|----------|--------|-------------|--------|
+| `/bookings` | GET | List user bookings | ❌ |
+| `/bookings/{id}` | GET | Get booking details | ❌ |
+| `/bookings` | POST | Create booking | ✅ |
+| `/bookings/{id}` | PUT | Update booking | ❌ |
+| `/bookings/{id}` | DELETE | Cancel booking | ❌ |
+| `/bookings/{id}/reserve` | POST | Reserve booking | ❌ |
 
-## Apartment Listings & Search
+### Reviews & Feedback
+| Endpoint | Method | Description | Status |
+|----------|--------|-------------|--------|
+| `/reviews` | GET | List reviews | ❌ |
+| `/reviews/{id}` | GET | Get review details | ❌ |
+| `/reviews` | POST | Create review | ❌ |
+| `/reviews/{id}` | PUT | Update review | ❌ |
+| `/reviews/{id}` | DELETE | Delete review | ❌ |
 
-### GET /apartments
-Return a list of available apartments. Supports filtering by location, price, amenities, etc. (done)
+### Administrative Endpoints
+| Endpoint | Method | Description | Status |
+|----------|--------|-------------|--------|
+| `/admin/dashboard` | GET | System metrics | ❌ |
+| `/admin/users` | GET | Manage users | ❌ |
+| `/admin/users/{id}/role` | PUT | Update user roles | ❌ |
+| `/admin/bookings` | GET | Manage bookings | ❌ |
 
-### GET /apartments/{id}
-Retrieve detailed information for a specific apartment.
+### Advanced Features
+| Endpoint | Method | Description | Status |
+|----------|--------|-------------|--------|
+| `/statistics` | GET | System analytics | ❌ |
+| `/notifications` | GET | User notifications | ❌ |
+| `/webhooks` | POST | Register webhooks | ❌ |
+| `/settings` | GET | App settings | ❌ |
 
-### POST /apartments/search
-Offer a flexible search endpoint where clients can send complex query parameters (e.g., date ranges, ratings, proximity).
+## Project Structure
 
----
-
-## Booking Operations
-
-### GET /bookings
-List all bookings for the authenticated user, with options for filtering by status (upcoming, past, etc.).
-
-### GET /bookings/{id}
-Retrieve details of a particular booking.
-
-### POST /bookings
-Create a new booking. Include details like apartment ID, date range, and any special requirements. (done)
-
-### PUT /bookings/{id}
-Update an existing booking. This endpoint might allow changing dates or adding special requests (depending on business rules).
-
-### DELETE /bookings/{id}
-Cancel a booking. Consider soft deletion or providing a cancellation reason.
-
-### POST /bookings/{id}/reserve
-A specialized endpoint for reserving a booking before final confirmation (can include temporary hold logic and payment integration).
-
----
-
-## Reviews & Feedback
-
-### GET /reviews
-Retrieve reviews, optionally filtered by apartment or user.
-
-### GET /reviews/{id}
-Get details for a specific review.
-
-### POST /reviews
-Submit a new review. Include fields like rating, comments, and associated apartment ID.
-
-### PUT /reviews/{id}
-Edit an existing review if allowed (e.g., within a certain time frame).
-
-### DELETE /reviews/{id}
-Remove a review. This might be allowed for the author or an admin moderator.
-
----
-
-## Administrative Endpoints
-
-### GET /admin/dashboard
-Provides a snapshot of system metrics such as recent bookings, user sign-ups, and revenue.
-
-### GET /admin/users
-List all users with administrative filters and search capabilities.
-
-### PUT /admin/users/{id}/role
-Update a user's role or permissions, managing access control centrally.
-
-### GET /admin/bookings
-Retrieve all bookings in the system for oversight and management.
-
----
-
-## Additional & Advanced Features
-
-### GET /statistics
-Provide aggregated data like booking trends, revenue analytics, and user activity over time.
-
-### GET /notifications
-List notifications for a user, such as booking confirmations, reminders, or promotional offers.
-
-### POST /webhooks
-Allow external systems to subscribe to events (e.g., booking confirmation, cancellations) by registering webhook endpoints.
-
-### GET /settings
-Retrieve application settings or user-specific preferences, which could be useful for a customizable user experience.
-
-## Directory Structure
 ```text
-loingtan-clean_architecture_booking_application/
+bookify/
 ├── README.md
 ├── Bookify.sln
-├── LICENSE.txt
-├── docker-compose.dcproj
-├── docker-compose.override.yml
 ├── docker-compose.yml
-├── launchSettings.json
-├── .dockerignore
 ├── src/
-│   ├── Bookify.API/               # Presentation layer: API endpoints and controllers
-│   ├── Bookify.Application/       # Application layer: CQRS commands, queries, and services
-│   ├── Bookify.Domain/            # Domain layer: Entities, value objects, and business logic
-│   └── Bookify.Infrastructure/    # Infrastructure layer: External service implementations
-├── test/                          # Test projects for all layers
+│   ├── Bookify.API/               # API controllers and endpoints
+│   ├── Bookify.Application/       # CQRS handlers and services
+│   ├── Bookify.Domain/            # Entities and business logic
+│   └── Bookify.Infrastructure/    # External integrations
+├── test/
 │   ├── Bookify.Api.FunctionalTests/
 │   ├── Bookify.Application.IntegrationTests/
 │   ├── Bookify.Application.UnitTests/
 │   ├── Bookify.ArchitectureTests/
 │   └── Bookify.Domain.UnitTests/
-└── .github/
-└── workflows/
-└── dotnet.yml             # CI/CD pipeline configuration
+└── .github/workflows/             # CI/CD pipeline configuration
+
 ```
