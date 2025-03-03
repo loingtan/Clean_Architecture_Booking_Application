@@ -1,11 +1,18 @@
 ﻿using Bookify.Application.Abstractions.Data;
 using Bookify.Application.Abstractions.Messaging;
+using Bookify.Application.Common.Models;
 using Bookify.Domain.Entities.Abstractions;
 using Bookify.Domain.Entities.Bookings.Enums;
 using Dapper;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Bookify.Application.Apartments.SearchApartments;
-internal sealed class SearchApartmentQueryHandler : IQueryHandler<SearchApartmentsQuery, IReadOnlyList<ApartmentResponse>>
+
+internal sealed class SearchApartmentQueryHandler
+    : IQueryHandler<SearchApartmentsQuery, PagedResponse<ApartmentResponse>>
 {
     private static readonly int[] ActiveBookingStatuses =
     {
@@ -21,14 +28,53 @@ internal sealed class SearchApartmentQueryHandler : IQueryHandler<SearchApartmen
         _connectionFactory = connectionFactory;
     }
 
-    public async Task<Result<IReadOnlyList<ApartmentResponse>>> Handle(SearchApartmentsQuery request, CancellationToken cancellationToken)
+    public async Task<Result<PagedResponse<ApartmentResponse>>> Handle(
+        SearchApartmentsQuery request,
+        CancellationToken cancellationToken)
     {
         if (request.StartDate > request.EndDate)
-            return new List<ApartmentResponse>();
+            return new PagedResponse<ApartmentResponse>(
+                new List<ApartmentResponse>(), 0, request.PageSize, request.PageNumber, 0, false, false);
 
         using var connection = _connectionFactory.CreateConnection();
 
-        const string sql = """
+        var sqlCount = """
+            SELECT COUNT(a.id)
+            FROM apartments a
+            WHERE NOT EXISTS
+            (
+                SELECT 1
+                FROM bookings b
+                WHERE
+                    b.apartment_id = a.id AND
+                    b.duration_start <= @EndDate AND
+                    b.duration_end >= @StartDate AND
+                    b.status = ANY(@ActiveBookingStatuses)
+            )
+            """;
+
+        if (!string.IsNullOrEmpty(request.Country))
+        {
+            sqlCount += " AND a.address_country = @Country";
+        }
+
+        if (!string.IsNullOrEmpty(request.City))
+        {
+            sqlCount += " AND a.address_city = @City";
+        }
+
+        var totalCount = await connection.ExecuteScalarAsync<int>(
+            sqlCount,
+            new
+            {
+                request.StartDate,
+                request.EndDate,
+                ActiveBookingStatuses,
+                request.Country,
+                request.City
+            });
+
+        var sql = """
             SELECT
                 a.id AS Id,
                 a.name AS Name,
@@ -50,26 +96,50 @@ internal sealed class SearchApartmentQueryHandler : IQueryHandler<SearchApartmen
                     b.duration_start <= @EndDate AND
                     b.duration_end >= @StartDate AND
                     b.status = ANY(@ActiveBookingStatuses)
-                    
             )
             """;
 
-        var apartments = await connection.QueryAsync<ApartmentResponse, AddressResponse, ApartmentResponse>(
-            sql,
-            (apartment, address) =>
-            {
-                apartment.Address = address;
+        if (!string.IsNullOrEmpty(request.Country))
+        {
+            sql += " AND a.address_country = @Country";
+        }
 
-                return apartment;
-            },
+        if (!string.IsNullOrEmpty(request.City))
+        {
+            sql += " AND a.address_city = @City";
+        }
+
+        sql += """
+            ORDER BY a.id
+            LIMIT @PageSize OFFSET (@PageNumber - 1) * @PageSize;
+            """;
+
+        var apartments = await connection.QueryAsync<ApartmentResponse>(
+            sql,
             new
             {
                 request.StartDate,
                 request.EndDate,
-                ActiveBookingStatuses
-            },
-            splitOn: "Country");
+                ActiveBookingStatuses,
+                request.Country,
+                request.City,
+                request.PageSize,
+                request.PageNumber
+            });
 
-        return apartments.ToList();
+        var totalPages = (int)Math.Ceiling(totalCount / (double)request.PageSize);
+        var hasNext = request.PageNumber < totalPages;
+        var hasPrevious = request.PageNumber > 1;
+
+        var pagedResponse = new PagedResponse<ApartmentResponse>(
+            apartments.ToList(),
+            totalCount,
+            request.PageSize,
+            request.PageNumber,
+            totalPages,
+            hasNext,
+            hasPrevious);
+
+        return Result.Success(pagedResponse);
     }
 }
