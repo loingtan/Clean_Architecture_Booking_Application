@@ -1,4 +1,5 @@
 using Bookify.Application.Abstractions.Messaging;
+using Bookify.Domain.Entities.Apartments.Enums;
 
 namespace Bookify.Application.Apartments.UpdateApartment;
 
@@ -7,11 +8,10 @@ public sealed record UpdateApartmentCommand(
     string? Name,
     string? Description,
     decimal? Price,
-    int? Rooms,
-    int? Beds,
-    int? Bathrooms,
+    decimal? CleaningFee,
+    List<Amenity>? Amenities,  // Added Amenities parameter
     string? Address,
     string? City,
-    string? Country,
-    decimal? Latitude,
-    decimal? Longitude) : ICommand;
+    string? State,
+    string? ZipCode,
+    string? Country) : ICommand;
