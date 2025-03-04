@@ -28,17 +28,16 @@ internal sealed class UpdateApartmentCommandHandler : ICommandHandler<UpdateApar
         }
 
         apartment.Update(
-            command.Name,
-            command.Description,
-            command.Price,
-            command.Rooms,
-            command.Beds,
-            command.Bathrooms,
-            command.Address,
-            command.City,
-            command.Country,
-            command.Latitude,
-            command.Longitude
+            name: command.Name,
+            description: command.Description,
+            priceAmount: command.Price,
+            cleaningFeeAmount: command.CleaningFee,
+            amenities: null,
+            street: command.Address,
+            city: command.City,
+            state: command.State,
+            zipCode: command.ZipCode,
+            country: command.Country
         );
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);

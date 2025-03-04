@@ -24,7 +24,7 @@ public class UsersController(ISender sender) : ApiController
         var query = new GetLoggedInUserQuery();
         var result = await sender.Send(query, cancellationToken);
         return Ok(result.Value);
-   
+
     }
 
     [HttpGet("me")]

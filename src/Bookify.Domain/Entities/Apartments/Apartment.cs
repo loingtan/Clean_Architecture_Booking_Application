@@ -53,66 +53,40 @@ public sealed class Apartment : AuditableEntity<ApartmentId>
     public void Update(string? name = null,
                        string? description = null,
                        decimal? priceAmount = null,
-                       int? rooms = null,
-                       int? beds = null,
-                       int? bathrooms = null,
+                       decimal? cleaningFeeAmount = null,
+                       List<Amenity>? amenities = null,
                        string? street = null,
                        string? city = null,
-                       string? country = null,
-                       decimal? latitude = null,
-                       decimal? longitude = null)
+                       string? state = null,
+                       string? zipCode = null,
+                       string? country = null
+             )
     {
         if (name is not null)
             Name = name;
 
         if (description is not null)
             Description = description;
-        if (priceAmount is null)
-        {
-            throw new ArgumentNullException(nameof(priceAmount));
-        }
-
-        if (rooms is null)
-        {
-            throw new ArgumentNullException(nameof(rooms));
-        }
-
-        if (beds is null)
-        {
-            throw new ArgumentNullException(nameof(beds));
-        }
-
-        if (bathrooms is null)
-        {
-            throw new ArgumentNullException(nameof(bathrooms));
-        }
 
         if (priceAmount.HasValue)
             Price = Money.From(priceAmount.Value, Price.Currency);
 
-        // Update address if any address components are specified
-        if (street is not null || city is not null || country is not null ||
-            latitude.HasValue || longitude.HasValue)
+        if (cleaningFeeAmount.HasValue)
+            CleaningFee = Money.From(cleaningFeeAmount.Value, CleaningFee.Currency);
+
+        if (amenities is not null)
+            Amenities = amenities;
+
+        
+        if (street is not null || city is not null || state is not null ||
+            zipCode is not null || country is not null)
         {
             Address = Address.From(
                 country ?? Address.Country,
-                Address.State, // Assuming state isn't updated
-                Address.ZipCode, // Assuming zipcode isn't updated
+                state ?? Address.State,
+                zipCode ?? Address.ZipCode,
                 city ?? Address.City,
                 street ?? Address.Street);
         }
-
-        if (longitude is null)
-        {
-            throw new ArgumentNullException(nameof(longitude));
-        }
-
-        if (latitude is null)
-        {
-            throw new ArgumentNullException(nameof(latitude));
-        }
-
-        // Update other scalar properties if specified
-
     }
 }
