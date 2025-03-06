@@ -72,7 +72,7 @@ Bookify is a sophisticated booking platform built with Clean Architecture princi
   - [ ] Reviews and feedback
   - [ ] Administrative controls
 - [ ] Event Sourcing for audit trails
-- [ ] HATEOAS implementation for API discoverability
+- [x] HATEOAS implementation for API discoverability
 - [ ] OpenTelemetry integration
 - [ ] Message Queue integration
 - [ ] API rate limiting and throttling
@@ -104,8 +104,11 @@ Bookify is a sophisticated booking platform built with Clean Architecture princi
 | Endpoint | Method | Description | Status |
 |----------|--------|-------------|--------|
 | `/apartments` | GET | List available apartments | ✅ |
-| `/apartments/{id}` | GET | Get apartment details | ❌ |
+| `/apartments/{id}` | GET | Get apartment details | ✅ |
 | `/apartments/search` | POST | Advanced search | ❌ |
+| `/apartments` | POST | Create new apartment listing | ✅ |
+| `/apartments/{id}` | PATCH | Update apartment listing | ✅ |
+| `/apartments/{id}` | DELETE | Delete apartment listing | ❌ |
 
 ### Booking Operations
 | Endpoint | Method | Description | Status |
