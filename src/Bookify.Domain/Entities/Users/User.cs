@@ -8,7 +8,7 @@ public sealed class User :  AuditableEntity<UserId>
 {
     private readonly List<Role> _roles = new();
 
-    private User(UserId id, string firstName, string lastName, Email email) 
+    public User(UserId id, string firstName, string lastName, Email email) 
         : base(id)
     {
         FirstName = firstName;
@@ -16,7 +16,7 @@ public sealed class User :  AuditableEntity<UserId>
         Email = email;
     }
 
-    private User() { }
+    public User() { }
 
     public string IdentityId { get; private set; } = string.Empty;
     public string FirstName { get; private set; }
