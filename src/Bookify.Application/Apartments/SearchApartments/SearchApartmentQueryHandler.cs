@@ -111,7 +111,7 @@ internal sealed class SearchApartmentQueryHandler
 
         sql += """
             ORDER BY a.id
-            LIMIT @PageSize OFFSET (@PageNumber - 1) * @PageSize;
+            LIMIT @PageSize OFFSET GREATEST((@PageNumber - 1) * @PageSize, 0);
             """;
 
         var apartments = await connection.QueryAsync<ApartmentResponse>(

@@ -24,7 +24,7 @@ public sealed class Apartment : AuditableEntity<ApartmentId>
         Amenities = amenities;
     }
 
-    private Apartment() { }
+    public Apartment() { }
     public static Apartment Create(
         string name,
         string description,

@@ -1,32 +1,35 @@
-﻿using Bookify.Application.Abstractions.Authentication;
+﻿using System.Net;
+using Bookify.Application.Abstractions.Authentication;
 using Bookify.Application.Abstractions.Messaging;
-using Bookify.Application.Users.GetLoggedInUser;
 using Bookify.Domain.Entities.Abstractions;
 using Bookify.Domain.Entities.Users;
-using Mapster;
 
 namespace Bookify.Application.Users;
 
 internal sealed class RegisterUserCommandHandler
-    : ICommandHandler<UpdateUserProfileCommand, UserResponse>
+    : ICommandHandler<UpdateUserProfileCommand>
 {
     private readonly IUserRepository _userRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IUserContext _userContext;
 
-    public RegisterUserCommandHandler(IAuthenticationService authenticationService, IUserRepository userRepository, IUnitOfWork unitOfWork, IUserContext userContext)
+    public RegisterUserCommandHandler(IUserRepository userRepository, IUnitOfWork unitOfWork, IUserContext userContext)
     {
         _userRepository = userRepository;
         _unitOfWork = unitOfWork;
         _userContext = userContext;
     }
 
-    public async Task<Result<UserResponse>> Handle(UpdateUserProfileCommand command, CancellationToken cancellationToken)
+    public async Task<Result> Handle(UpdateUserProfileCommand command, CancellationToken cancellationToken)
     {
-        var user = command.Adapt<User>();
         var userId = new UserId(_userContext.UserId);
-        User updatedUser = await _userRepository.Update(userId, user, cancellationToken);
+        var user = await _userRepository.GetByIdAsync(userId, cancellationToken);
+        if (user is null)
+        {
+            return Result.Failure(UserErrors.NotFound);
+        }
+        user.Update(command.FirstName, command.LastName);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
-        return updatedUser.Adapt<UserResponse>();
+        return Result.Success();
     }
 }

@@ -2,6 +2,7 @@ using Bookify.Application.Abstractions.Messaging;
 using Bookify.Domain.Apartments;
 using Bookify.Domain.Entities.Abstractions;
 using Bookify.Domain.Entities.Apartments;
+using MapsterMapper;
 
 namespace Bookify.Application.Apartments.UpdateApartment;
 

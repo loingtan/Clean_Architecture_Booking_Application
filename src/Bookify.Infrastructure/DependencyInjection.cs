@@ -192,4 +192,5 @@ public static class DependencyInjection
                 options.SubstituteApiVersionInUrl = true;
             });
     }
+
 }

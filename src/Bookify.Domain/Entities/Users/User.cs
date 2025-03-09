@@ -34,6 +34,17 @@ public sealed class User :  AuditableEntity<UserId>
 
         return user;
     }
+    public void Update(string firstName = null, string lastName = null)
+    {
+        if(firstName != null)
+        {
+            FirstName = firstName;
+        }
+        if(lastName != null)
+        {
+            LastName = lastName;
+        }
+    }
 
     public void SetIdentityId(string identityId) => IdentityId = identityId;
 }

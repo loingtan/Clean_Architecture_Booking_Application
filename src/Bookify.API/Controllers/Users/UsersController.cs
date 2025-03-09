@@ -1,4 +1,5 @@
 ﻿using Asp.Versioning;
+using Bookify.API.Hypermedia;
 using Bookify.Application.Users;
 using Bookify.Application.Users.GetAllUsers;
 using Bookify.Application.Users.GetLoggedInUser;
@@ -8,6 +9,7 @@ using Bookify.Infrastructure.Authorization;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
 
 namespace Bookify.API.Controllers.Users;
 
@@ -83,10 +85,10 @@ public class UsersController(ISender sender) : ApiController
     [HttpPut("me")]
     public async Task<IActionResult> UpdateUserProfile([FromBody] UpdateUserRequest request, CancellationToken cancellationToken)
     {
-        var command = new UpdateUserProfileCommand(request.FirstName, 
-            request.LastName, 
+        var command = new UpdateUserProfileCommand(request.FirstName,
+            request.LastName,
             request.Password);
         var result = await sender.Send(command, cancellationToken);
-        return result.IsFailure ? ProblemDetails(result.Error): Ok(result.Value);
+        return result.IsFailure ? ProblemDetails(result.Error) : Ok(result.IsSuccess);
     }
 }
