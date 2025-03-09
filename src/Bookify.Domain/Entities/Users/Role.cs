@@ -11,7 +11,7 @@ namespace Bookify.Domain.Entities.Users
         public ICollection<User> Users { get; init; } = new List<User>();
         public ICollection<Permission> Permissions { get; set; } = new List<Permission>();
 
-        private Role(int id, string name) : base(id, name)
+        public Role(int id, string name) : base(id, name)
         {
         }
         public bool HasPermission(Permission permission)

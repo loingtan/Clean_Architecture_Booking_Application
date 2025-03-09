@@ -1,3 +1,4 @@
+using Bookify.API;
 using Bookify.API.Extensions;
 using Bookify.API.Hypermedia;
 using Bookify.API.Middleware;
@@ -66,6 +67,7 @@ builder.Services.ConfigureOptions<ConfigureSwaggerOptions>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
 builder.Services.AddScoped<ILinkGenerator, Bookify.API.Hypermedia.LinkGenerator>();
+builder.Services.AddMapping();
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())

@@ -4,8 +4,7 @@ using Bookify.Domain.Entities.Abstractions;
 using Bookify.Domain.Apartments;
 using Bookify.Domain.Entities.Apartments;
 
-using Dapper;
-using Mapster;
+using MapsterMapper;
 
 namespace Bookify.Application.Apartments.GetApartment;
 
@@ -13,13 +12,16 @@ internal sealed class GetApartmentQueryHandler : IQueryHandler<GetApartmentQuery
 {
     private readonly ISqlConnectionFactory _sqlConnectionFactory;
     private readonly IApartmentRepository _apartmentRepository;
+    private readonly IMapper _mapper;
 
     public GetApartmentQueryHandler(
         ISqlConnectionFactory sqlConnectionFactory,
-        IApartmentRepository apartmentRepository)
+        IApartmentRepository apartmentRepository,
+        IMapper mapper)
     {
         _sqlConnectionFactory = sqlConnectionFactory;
         _apartmentRepository = apartmentRepository;
+        _mapper = mapper;
     }
 
     public async Task<Result<ApartmentResponse>> Handle(GetApartmentQuery query, CancellationToken cancellationToken)
@@ -68,7 +70,7 @@ internal sealed class GetApartmentQueryHandler : IQueryHandler<GetApartmentQuery
             return Result.Failure<ApartmentResponse>(ApartmentErrors.NotFound);
         }
 
-        var response = apartment.Adapt<ApartmentResponse>();
+        var response = _mapper.Map<ApartmentResponse>(apartment);
         
         return response;
         
