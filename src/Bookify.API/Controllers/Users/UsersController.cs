@@ -2,6 +2,7 @@
 using Bookify.Application.Users.GetAllUsers;
 using Bookify.Application.Users.GetLoggedInUser;
 using Bookify.Application.Users.LogInUser;
+using Bookify.Application.Users.LogOutUser;
 using Bookify.Application.Users.RegisterUser;
 using Bookify.Infrastructure.Authorization;
 using MediatR;
@@ -73,7 +74,7 @@ public class UsersController(ISender sender) : ApiController
     {
         var command = new LogOutUserCommand();
         var result = await sender.Send(command, cancellationToken);
-        return result.IsFailure ? ProblemDetails(result.Error) : Ok(result.Value);
+        return result.IsFailure ? ProblemDetails(result.Error) : Ok("User logged out successfully");
     }
 
 
