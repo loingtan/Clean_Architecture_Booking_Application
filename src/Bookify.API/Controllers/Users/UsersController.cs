@@ -67,6 +67,16 @@ public class UsersController(ISender sender) : ApiController
         return result.IsFailure ? ProblemDetails(result.Error) : Ok(result.Value);
     }
 
+    [Authorize]
+    [HttpPost("logout")]
+    public async Task<IActionResult> Logout(CancellationToken cancellationToken)
+    {
+        var command = new LogOutUserCommand();
+        var result = await sender.Send(command, cancellationToken);
+        return result.IsFailure ? ProblemDetails(result.Error) : Ok(result.Value);
+    }
+
+
     [HttpGet("")]
     public async Task<IActionResult> GetAllUsers([FromQuery] GetAllUsersRequest request, CancellationToken cancellationToken)
     {

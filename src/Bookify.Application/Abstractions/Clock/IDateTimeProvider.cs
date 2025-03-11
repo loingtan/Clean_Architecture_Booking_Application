@@ -3,4 +3,5 @@
 public interface IDateTimeProvider
 {
     DateTime UtcNow { get; }
+    DateTime Parse(string date);
 }

@@ -1,4 +1,5 @@
-﻿using Microsoft.IdentityModel.JsonWebTokens;
+﻿using Bookify.Application.Users.GetAllUsers;
+using Microsoft.IdentityModel.JsonWebTokens;
 using System.Security.Claims;
 
 namespace Bookify.Infrastructure.Authentication;
@@ -17,5 +18,15 @@ internal static class ClaimsPrincipalExtensions
     {
         return principal?.FindFirstValue(ClaimTypes.NameIdentifier) ??
                throw new ApplicationException("User identity is unavailable");
+    }
+    public static string GetExpiration(this ClaimsPrincipal principal)
+    {
+        return principal?.FindFirstValue(JwtRegisteredClaimNames.Exp) ??
+               throw new ApplicationException("Token expiration is unavailable");
+    }
+    public static string GetTokenId(this ClaimsPrincipal principal)
+    {
+        return principal?.FindFirstValue(JwtRegisteredClaimNames.Jti) ??
+               throw new ApplicationException("Token identifier is unavailable");
     }
 }
